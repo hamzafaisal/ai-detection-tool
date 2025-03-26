@@ -1,4 +1,4 @@
-# Phrasly - AI Writing Assistant
+# AI Detection Tool - AI Writing Assistant
 
 A modern AI writing assistant tool that helps users enhance their writing with AI-powered features.
 
