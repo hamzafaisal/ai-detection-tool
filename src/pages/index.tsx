@@ -2,7 +2,6 @@
 
 import { useRouter } from "next/navigation";
 import { Metadata } from "next";
-import Header from "@/components/common/Header";
 import Footer from "@/components/common/Footer";
 import HeroSection from "@/components/common/HeroSection";
 import WritingAssistantSection from "@/components/common/WritingAssistantSection";
@@ -33,15 +32,6 @@ interface Faq {
   answer: string;
 }
 
-interface SiteSettings {
-  siteTitle: string;
-  heroTitle: string;
-  heroDescription: string;
-  heroPrimaryButtonText: string;
-  heroSecondaryButtonText: string;
-  writingAssistantTitle: string;
-  copyright: string;
-}
 
 export const metadata: Metadata = {
   title: "AI Detection Tool",

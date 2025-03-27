@@ -34,7 +34,7 @@ export default async function handler(
       id: result.user?.id,
       username: result.user?.username,
     });
-  } catch (error: any) {
+  } catch (error) {
     console.error('Registration error:', error);
     return res.status(500).json({ error: 'Internal server error' });
   }

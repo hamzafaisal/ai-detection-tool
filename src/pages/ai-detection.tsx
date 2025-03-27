@@ -3,19 +3,11 @@ import { useRouter } from 'next/router';
 import useAuthStore from '@/store/authStore';
 import useAIDetectionStore from '@/store/aiDetectionStore';
 import Button from '@/components/common/Button';
-import Input from '@/components/common/Input';
 
-interface DetectedText {
-  id: number;
-  content: string;
-  score: number | null;
-  isAI: boolean | null;
-  created_at: string;
-}
 
 export default function AIDetection() {
   const router = useRouter();
-  const { user, isAuthenticated } = useAuthStore();
+  const { isAuthenticated } = useAuthStore();
   const [content, setContent] = useState('');
   const [aiResult, setAIResult] = useState<{
     score: number | null;
@@ -25,7 +17,7 @@ export default function AIDetection() {
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [deleteId, setDeleteId] = useState<number | null>(null);
 
-  const { detectedTexts, isLoading, error, fetchDetectedTexts, detectAIContent, deleteDetectedText } = useAIDetectionStore();
+  const { detectedTexts, isLoading, fetchDetectedTexts, detectAIContent, deleteDetectedText } = useAIDetectionStore();
 
   const handleDeleteConfirm = async () => {
     if (deleteId) {
@@ -58,7 +50,7 @@ export default function AIDetection() {
     if (!content.trim()) return;
     
     setAIResult(null);
-    
+    console.log("AI Result", aiResult)
     try {
       await detectAIContent(content);
     } catch (error) {

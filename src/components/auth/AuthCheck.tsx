@@ -1,9 +1,11 @@
 import { useEffect } from 'react';
 import useAuthStore from '@/store/authStore';
 
-// This component doesn't render anything visually
-// It just checks for authentication status on mount
-const AuthCheck: React.FC = () => {
+/**
+ * This component doesn't render anything visually
+ * It just checks for authentication status on mount
+ */
+export default function AuthCheck() {
   const { checkAuth } = useAuthStore();
 
   useEffect(() => {
@@ -16,6 +18,4 @@ const AuthCheck: React.FC = () => {
   }, [checkAuth]);
 
   return null;
-};
-
-export default AuthCheck;
+}
