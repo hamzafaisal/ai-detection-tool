@@ -1,3 +1,5 @@
+import Image from "next/image";
+
 interface TestimonialsSectionProps {
   title: string;
   testimonials: {
@@ -25,12 +27,15 @@ const TestimonialsSection = ({
               key={index} 
               className="bg-white rounded-lg p-6 shadow-md flex flex-col items-center text-center"
             >
-              <img 
+              <Image 
                 src={testimonial.image} 
                 alt={testimonial.author} 
                 className="w-20 h-20 object-cover rounded-full mb-4"
+                width={80}
+                height={80}
+                layout="intrinsic"
               />
-              <p className="text-gray-600 italic mb-4">"{testimonial.quote}"</p>
+              <p className="text-gray-600 italic mb-4">{`"`+testimonial.quote+`"`}</p>
               <p className="font-semibold text-gray-800">{testimonial.author}</p>
               {testimonial.role && (
                 <p className="text-gray-500 text-sm">{testimonial.role}</p>

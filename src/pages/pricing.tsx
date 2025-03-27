@@ -1,4 +1,3 @@
-import { useRouter } from 'next/router';
 import { useState } from 'react';
 import Button from '@/components/common/Button';
 
@@ -71,7 +70,6 @@ const plans: Plan[] = [
 ];
 
 export default function Pricing() {
-  const router = useRouter();
   const [activePlan, setActivePlan] = useState<number>(1);
 
   const handleSubscribe = (plan: Plan) => {

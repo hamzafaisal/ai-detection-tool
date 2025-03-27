@@ -95,12 +95,6 @@ export const useSiteStore = create<SiteStore>()(
 
         // Check if any request failed
         if (![faqsResponse, featuresResponse, testimonialsResponse, settingsResponse].every(r => r.ok)) {
-          const errors = await Promise.all([
-            faqsResponse.json(),
-            featuresResponse.json(),
-            testimonialsResponse.json(),
-            settingsResponse.json()
-          ]);
           throw new Error('Failed to fetch data from Strapi API');
         }
 
@@ -134,10 +128,10 @@ export const useSiteStore = create<SiteStore>()(
           },
           loading: false
         });
-      } catch (error: any) {
+      } catch (error: unknown) {
         console.error('Error fetching site data:', error);
         set({
-          error: error.message || 'Failed to fetch site data',
+          error: error instanceof Error ? error.message : 'Failed to fetch site data',
           loading: false
         });
       }

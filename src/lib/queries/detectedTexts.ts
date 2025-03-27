@@ -8,7 +8,7 @@ export interface DetectedText {
   score: number | null;
   isAI: boolean | null;
   userId: number;
-  created_at: string;
+  created_at: Date;
 }
 
 export async function getDetectedTexts(userId: number): Promise<{ success: boolean; data?: DetectedText[]; error?: string }> {
