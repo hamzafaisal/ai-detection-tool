@@ -1,6 +1,7 @@
 import { create } from 'zustand';
 import { devtools, persist } from 'zustand/middleware';
 import Cookies from 'js-cookie';
+import { createDetectedText, deleteDetectedText, getDetectedTexts } from '@/lib/supabase/detectedTexts';
 
 interface DetectedText {
   id: number;
@@ -31,10 +32,11 @@ const aiDetectionStore = (set: any, get: any): AIDetectionState => ({
 
     set({ isLoading: true, error: null });
     try {
-      const response = await fetch('/api/detected-texts');
-      if (response.ok) {
-        const data = await response.json();
-        set({ detectedTexts: data });
+      // const response = await fetch('/api/detected-texts');
+      const response = await getDetectedTexts(userId);
+      if (response.message) {
+        // const data = await response.json();
+        set({ detectedTexts: response.data || [] });
       } else {
         throw new Error('Failed to fetch detected texts');
       }
@@ -108,19 +110,21 @@ const aiDetectionStore = (set: any, get: any): AIDetectionState => ({
       }
 
       // Save to database via API
-      const response = await fetch('/api/detected-texts', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          content,
-          score: queryResult.result_details.human,
-          isAI: queryResult.result_details.human < 50,
-        }),
-      });
+      // const response = await fetch('/api/detected-texts', {
+      //   method: 'POST',
+      //   headers: {
+      //     'Content-Type': 'application/json',
+      //   },
+      //   body: JSON.stringify({
+      //     content,
+      //     score: queryResult.result_details.human,
+      //     isAI: queryResult.result_details.human < 50,
+      //   }),
+      // });
 
-      if (response.ok) {
+      const response = await createDetectedText(userId, content, queryResult.result_details.human, queryResult.result_details.human < 50);
+
+      if (response.success) {
         // Refresh the list of detected texts
         get().fetchDetectedTexts();
       } else {
@@ -136,11 +140,13 @@ const aiDetectionStore = (set: any, get: any): AIDetectionState => ({
   deleteDetectedText: async (id: number) => {
     set({ isLoading: true, error: null });
     try {
-      const response = await fetch(`/api/detected-texts/${id}`, {
-        method: 'DELETE',
-      });
+      // const response = await fetch(`/api/detected-texts/${id}`, {
+      //   method: 'DELETE',
+      // });
 
-      if (response.ok) {
+      const response = await deleteDetectedText(id);
+
+      if (response.success) {
         // Remove the deleted text from the list
         const currentTexts = get().detectedTexts;
         set({

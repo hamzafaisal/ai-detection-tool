@@ -2,6 +2,7 @@ import { create } from 'zustand';
 import { devtools } from 'zustand/middleware';
 import { persist } from 'zustand/middleware';
 import Cookies from 'js-cookie';
+import { getUserById, loginUser, registerUser } from '@/lib/supabase/users';
 
 interface User {
   id: number;
@@ -30,36 +31,43 @@ const authStore = (set: any, get: any): AuthState => ({
     set({ isLoading: true, error: null });
     try {
       // Use API route instead of direct Prisma query
-      const response = await fetch('/api/auth/register', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ username, password }),
-      });
+      // const response = await fetch('/api/auth/register', {
+      //   method: 'POST',
+      //   headers: {
+      //     'Content-Type': 'application/json',
+      //   },
+      //   body: JSON.stringify({ username, password }),
+      // });
 
-      const data = await response.json();
+      const result = await registerUser(username, password)
+      // const data = await response.json();
 
-      if (!response.ok) {
+      if (!result.success) {
         set({
           isLoading: false,
-          error: data.error || 'Registration failed',
+          error: result.message || 'Registration failed',
         });
         return false;
       }
 
-      // Set user data from response
-      set({
-        user: {
-          id: data.id,
-          username: data.username,
-        },
-        isAuthenticated: true,
-        isLoading: false,
-      });
-      // Set cookie for session management
-      Cookies.set('user_id', String(data.id), { expires: 7 });
-      return true;
+      if (result.user) {
+        set({
+          user: {
+            id: result.user.id,
+            username: result.user.username,
+          },
+          isAuthenticated: true,
+          isLoading: false,
+        });
+        // Set cookie for session management
+        Cookies.set('user_id', String(result.user.id), { expires: 7 });
+        return true;
+      } else {
+        return true;
+      }
+
+
+
     } catch (error: any) {
       set({
         isLoading: false,
@@ -73,36 +81,38 @@ const authStore = (set: any, get: any): AuthState => ({
     set({ isLoading: true, error: null });
     try {
       // Use API route instead of direct Prisma query
-      const response = await fetch('/api/auth/login', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ username, password }),
-      });
+      // const response = await fetch('/api/auth/login', {
+      //   method: 'POST',
+      //   headers: {
+      //     'Content-Type': 'application/json',
+      //   },
+      //   body: JSON.stringify({ username, password }),
+      // });
 
-      const data = await response.json();
 
-      if (!response.ok) {
+      const result = await loginUser(username, password)
+      // const data = await response.json();
+
+      if (result.success && result.user) {
+        set({
+          user: {
+            id: result.user.id,
+            username: result.user.username,
+          },
+          isAuthenticated: true,
+          isLoading: false,
+        });
+        // Set cookie for session management
+        Cookies.set('user_id', String(result.user.id), { expires: 7 });
+        return true;
+      } else {
+        // Handle the case where result.user is null or undefined
         set({
           isLoading: false,
-          error: data.error || 'Authentication failed',
+          error: 'Authentication failed',
         });
         return false;
       }
-
-      // Set user data from response
-      set({
-        user: {
-          id: data.id,
-          username: data.username,
-        },
-        isAuthenticated: true,
-        isLoading: false,
-      });
-      // Set cookie for session management
-      Cookies.set('user_id', String(data.id), { expires: 7 });
-      return true;
     } catch (error: any) {
       set({
         isLoading: false,
@@ -116,13 +126,13 @@ const authStore = (set: any, get: any): AuthState => ({
     set({ isLoading: true });
     try {
       // Call the logout API endpoint
-      await fetch('/api/auth/logout', {
-        method: 'POST',
-      });
-      
+      // await fetch('/api/auth/logout', {
+      //   method: 'POST',
+      // });
+
       // Remove client-side cookie
       Cookies.remove('user_id');
-      
+
       // Clear the store state
       set({
         user: null,
@@ -143,20 +153,21 @@ const authStore = (set: any, get: any): AuthState => ({
 
   checkAuth: async () => {
     const userId = Cookies.get('user_id');
-    
+
     if (!userId) {
       set({ isAuthenticated: false, user: null });
       return false;
     }
-    
+
     set({ isLoading: true, error: null });
     try {
       // Call the user API to validate the session
-      const response = await fetch('/api/auth/user', {
-        method: 'GET',
-      });
+      // const response = await fetch('/api/auth/user', {
+      //   method: 'GET',
+      // });
 
-      if (!response.ok) {
+      const result = await getUserById(userId);
+      if (!result.message) {
         // Clear invalid cookie
         Cookies.remove('user_id');
         set({
@@ -167,11 +178,11 @@ const authStore = (set: any, get: any): AuthState => ({
         return false;
       }
 
-      const userData = await response.json();
-      
+      // const userData = await response.json();
+
       // Update user state with verified data
       set({
-        user: userData,
+        user: result.user,
         isAuthenticated: true,
         isLoading: false,
       });
@@ -179,7 +190,7 @@ const authStore = (set: any, get: any): AuthState => ({
     } catch (error) {
       // Clear cookie on error
       Cookies.remove('user_id');
-      
+
       set({
         isLoading: false,
         isAuthenticated: false,
@@ -192,12 +203,12 @@ const authStore = (set: any, get: any): AuthState => ({
 });
 
 // Create the store with middleware
-const useAuthStore = create<AuthState>()(  
+const useAuthStore = create<AuthState>()(
   devtools(
     persist(authStore, {
       name: 'auth-storage',
       // Only persist non-sensitive data
-      partialize: (state: AuthState) => ({ 
+      partialize: (state: AuthState) => ({
         isAuthenticated: state.isAuthenticated,
         user: state.user ? { id: state.user.id, username: state.user.username } : null,
       }),
